@@ -1,0 +1,342 @@
+---
+description: "CRITICAL: Dependency management rules - prevents unnecessary package additions"
+alwaysApply: true
+---
+
+# Dependency Discipline
+
+## 🚨 CRITICAL: DO NOT ADD NEW DEPENDENCIES
+
+This is the **MOST IMPORTANT** rule in the project.
+
+### Installed Dependencies
+
+Project has carefully curated dependencies in @package.json:
+
+**UI & Styling:**
+- `tailwindcss` v4
+- `@radix-ui/*` (via shadcn/ui components)
+- `lucide-react` for icons
+- `next-themes` for theming
+- `class-variance-authority`, `clsx`, `tailwind-merge`
+
+**Forms & Validation:**
+- `react-hook-form`
+- `@hookform/resolvers`
+- `zod`
+
+**State & Data:**
+- `zustand`
+- `@tanstack/react-query`
+- `@tanstack/react-table`
+
+**UI Components:**
+- `cmdk` (command palette)
+- `sonner` (toast notifications)
+- `vaul` (drawers)
+- `embla-carousel-react`
+- `react-resizable-panels`
+- `react-day-picker`
+- `input-otp`
+
+**Utilities:**
+- `axios` (HTTP client)
+- `date-fns` (date manipulation)
+- `@dnd-kit/*` (drag & drop)
+- `recharts` (charting)
+- `simple-icons`
+
+**Testing:**
+- `@playwright/test`
+
+**Build Tools:**
+- `@biomejs/biome` (linting/formatting)
+- `husky` + `lint-staged` (git hooks)
+
+## Forbidden Actions
+
+### ❌ NEVER Add Dependencies Without User Permission
+
+```bash
+# ❌ FORBIDDEN - Do NOT run these:
+npm install <any-package>
+npm add <any-package>
+pnpm add <any-package>
+yarn add <any-package>
+```
+
+### ❌ NEVER Suggest Installing Packages
+
+```typescript
+// ❌ BAD RESPONSE
+// "You need to install lodash for this functionality"
+// "Let's add moment.js for date handling"
+// "Install uuid for generating IDs"
+
+// ✅ GOOD RESPONSE
+// "We can use date-fns (already installed) for date handling"
+// "Use crypto.randomUUID() (built-in) for ID generation"
+```
+
+## Required Behavior
+
+### 1. Check Existing Dependencies First
+
+Before suggesting ANY solution:
+
+```bash
+# Check what's available
+cat package.json | grep -A 50 '"dependencies"'
+```
+
+### 2. Use What's Already Installed
+
+**Icon needs?** → Use `lucide-react`
+
+```typescript
+// ✅ Good
+import { User, Settings, Home } from "lucide-react";
+```
+
+**Date formatting?** → Use `date-fns`
+
+```typescript
+// ✅ Good
+import { format, parseISO } from "date-fns";
+```
+
+**HTTP requests?** → Use `axios`
+
+```typescript
+// ✅ Good
+import axios from "axios";
+```
+
+**State management?** → Use `zustand`
+
+```typescript
+// ✅ Good
+import { create } from "zustand";
+```
+
+**Form handling?** → Use `react-hook-form` + `zod`
+
+```typescript
+// ✅ Good
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+```
+
+**Data tables?** → Use `@tanstack/react-table`
+
+```typescript
+// ✅ Good
+import { useReactTable } from "@tanstack/react-table";
+```
+
+**Toast notifications?** → Use `sonner`
+
+```typescript
+// ✅ Good
+import { toast } from "sonner";
+```
+
+**Command palette?** → Use `cmdk`
+
+```typescript
+// ✅ Good
+import { Command } from "cmdk";
+```
+
+### 3. Leverage Built-in Browser/Node APIs
+
+**UUID generation?** → Use Web Crypto API
+
+```typescript
+// ✅ Good: No package needed
+const id = crypto.randomUUID();
+```
+
+**Deep cloning?** → Use structuredClone
+
+```typescript
+// ✅ Good: Native API
+const clone = structuredClone(original);
+```
+
+**Array utilities?** → Use native methods
+
+```typescript
+// ✅ Good: Native methods
+const unique = [...new Set(array)];
+const grouped = Object.groupBy(items, (item) => item.category);
+```
+
+### 4. Implement Custom Solutions
+
+If functionality isn't available, implement it:
+
+```typescript
+// ✅ Good: Custom utility instead of lodash
+function debounce<T extends (...args: any[]) => any>(
+  func: T,
+  wait: number
+): (...args: Parameters<T>) => void {
+  let timeout: NodeJS.Timeout;
+  return (...args: Parameters<T>) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), wait);
+  };
+}
+```
+
+## Common Scenarios & Solutions
+
+### Scenario 1: "I need lodash"
+
+**DON'T:** Install lodash
+
+**DO:** Use native JavaScript or implement utility:
+
+```typescript
+// Debounce
+const debounce = (fn: Function, ms: number) => {
+  let timeout: NodeJS.Timeout;
+  return (...args: any[]) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => fn(...args), ms);
+  };
+};
+
+// Chunk array
+const chunk = <T>(arr: T[], size: number): T[][] =>
+  Array.from({ length: Math.ceil(arr.length / size) }, (_, i) =>
+    arr.slice(i * size, i * size + size)
+  );
+
+// Deep clone
+const clone = structuredClone(obj);
+```
+
+### Scenario 2: "I need moment.js"
+
+**DON'T:** Install moment.js
+
+**DO:** Use date-fns (already installed):
+
+```typescript
+import { format, parseISO, addDays, differenceInDays } from "date-fns";
+
+const formatted = format(new Date(), "yyyy-MM-dd");
+const future = addDays(new Date(), 7);
+```
+
+### Scenario 3: "I need classnames"
+
+**DON'T:** Install classnames
+
+**DO:** Use clsx (already installed):
+
+```typescript
+import { clsx } from "clsx";
+
+const className = clsx({
+  "bg-primary": isPrimary,
+  "text-white": isActive,
+});
+```
+
+### Scenario 4: "I need a UUID library"
+
+**DON'T:** Install uuid
+
+**DO:** Use native crypto:
+
+```typescript
+const id = crypto.randomUUID();
+```
+
+### Scenario 5: "I need a different icon set"
+
+**DON'T:** Install another icon library
+
+**DO:** Use lucide-react (already installed):
+
+```typescript
+import { Check, X, AlertCircle } from "lucide-react";
+```
+
+### Scenario 6: "I need prettier"
+
+**DON'T:** Install prettier
+
+**DO:** Use Biome (already installed):
+
+```bash
+npm run format
+npm run check:fix
+```
+
+### Scenario 7: "I need eslint"
+
+**DON'T:** Install eslint
+
+**DO:** Use Biome (already installed):
+
+```bash
+npm run lint
+npm run check
+```
+
+## When Adding Dependencies IS Acceptable
+
+Only add dependencies when:
+
+1. **User explicitly requests it**: "Please install X"
+2. **Core functionality is impossible without it**: Extremely rare
+3. **Alternative would be highly complex**: Recreating entire libraries
+
+**Even then:**
+- Ask user for confirmation first
+- Explain why it's necessary
+- Suggest alternatives using existing dependencies
+
+## Build Validation After Changes
+
+After ANY code changes:
+
+```bash
+npm run build
+```
+
+This ensures:
+- TypeScript compiles correctly
+- No missing dependencies
+- Build succeeds
+
+If build fails, fix issues before considering new dependencies.
+
+## Pre-Commit Checklist
+
+Before committing changes:
+
+- [ ] No new dependencies added
+- [ ] Used existing packages
+- [ ] Leveraged native APIs where possible
+- [ ] Build passes: `npm run build`
+- [ ] Lints pass: `npm run check`
+
+## Summary
+
+**Default Answer to "Can I use X package?"**
+
+> "No. Let's use [existing alternative] or implement it with native JavaScript/TypeScript."
+
+**Remember:** Every dependency is:
+- Technical debt
+- Security risk
+- Bundle size increase
+- Maintenance burden
+
+Keep the dependency tree **lean and intentional**.

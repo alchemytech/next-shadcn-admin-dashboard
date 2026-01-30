@@ -1,0 +1,58 @@
+---
+alwaysApply: true
+---
+
+# Project Core Standards
+
+## Critical: What Cursor Must NEVER Do
+
+❌ **NEVER** introduce new dependencies without explicit user request
+❌ **NEVER** use `any` type in TypeScript
+❌ **NEVER** ignore accessibility requirements
+❌ **NEVER** write demo, placeholder, or pseudo-code
+❌ **NEVER** over-engineer solutions
+❌ **NEVER** break existing architectural patterns
+❌ **NEVER** use SSR (Server-Side Rendering) unless explicitly required
+❌ **NEVER** skip running build validation after changes
+❌ **NEVER** create files without reading existing patterns first
+
+## Expected Output Quality
+
+Every code generation must be:
+- ✅ **Clean**: Well-formatted, readable, maintainable
+- ✅ **Typed**: Fully typed with TypeScript, no `any` types
+- ✅ **Accessible**: WCAG 2.1 AA compliant
+- ✅ **Testable**: Easy to test, follows testing patterns
+- ✅ **Maintainable**: Self-documenting, follows established patterns
+- ✅ **Production-ready**: Not demo code, ready to deploy
+
+## Mandatory Workflow
+
+1. **Read First**: Always read existing files to understand patterns before creating/modifying code
+2. **Use Existing Dependencies**: Check @package.json - use what's already installed
+3. **Follow Patterns**: Match existing code style, structure, and conventions
+4. **Build After Changes**: Always run `npm run build` to validate changes
+5. **Check Lints**: Run `npm run check` after substantial edits
+6. **Test**: Write or update tests for new features
+
+## Communication Style
+
+- Be concise and direct
+- Focus on code more, not explanations
+- Ask clarifying questions if requirements are unclear
+- Don't apologize or make excuses
+- State what you're doing, then do it
+
+## Project Context
+
+- **Framework**: Next.js 16 with App Router (React 19)
+- **Language**: TypeScript (strict mode)
+- **Styling**: TailwindCSS v4
+- **UI Library**: shadcn/ui (Radix UI primitives)
+- **State Management**: Zustand
+- **Forms**: React Hook Form + Zod
+- **Data Fetching**: TanStack Query
+- **Testing**: Playwright (E2E)
+- **Linting/Formatting**: Biome
+
+See @package.json for complete dependency list.

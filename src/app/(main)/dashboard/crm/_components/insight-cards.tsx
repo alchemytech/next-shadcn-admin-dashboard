@@ -1,6 +1,6 @@
 "use client";
 
-import { Bar, BarChart, CartesianGrid, Label, LabelList, Pie, PieChart, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, LabelList, Pie, PieChart, XAxis, YAxis } from "recharts";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -42,28 +42,20 @@ export function InsightCards() {
                 outerRadius={90}
                 paddingAngle={2}
                 cornerRadius={4}
-              >
-                <Label
-                  content={({ viewBox }) => {
-                    if (viewBox && "cx" in viewBox && "cy" in viewBox) {
-                      return (
-                        <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle" dominantBaseline="middle">
-                          <tspan
-                            x={viewBox.cx}
-                            y={viewBox.cy}
-                            className="fill-foreground font-bold text-3xl tabular-nums"
-                          >
-                            {totalLeads.toLocaleString()}
-                          </tspan>
-                          <tspan x={viewBox.cx} y={(viewBox.cy ?? 0) + 24} className="fill-muted-foreground">
-                            Leads
-                          </tspan>
-                        </text>
-                      );
-                    }
-                  }}
-                />
-              </Pie>
+                label={({ cx, cy, index }) => {
+                  if (index !== 0) return null;
+                  return (
+                    <text x={cx} y={cy} textAnchor="middle" dominantBaseline="middle">
+                      <tspan x={cx} y={cy} className="fill-foreground font-bold text-3xl tabular-nums">
+                        {totalLeads.toLocaleString()}
+                      </tspan>
+                      <tspan x={cx} y={(cy ?? 0) + 24} className="fill-muted-foreground">
+                        Leads
+                      </tspan>
+                    </text>
+                  );
+                }}
+              />
               <ChartLegend
                 layout="vertical"
                 verticalAlign="middle"
@@ -101,7 +93,13 @@ export function InsightCards() {
         </CardHeader>
         <CardContent className="size-full max-h-52">
           <ChartContainer config={projectRevenueChartConfig} className="size-full">
-            <BarChart accessibilityLayer data={projectRevenueChartData} layout="vertical">
+            <BarChart
+              accessibilityLayer
+              data={projectRevenueChartData}
+              layout="vertical"
+              barSize={24}
+              barCategoryGap={12}
+            >
               <CartesianGrid horizontal={false} />
               <YAxis
                 dataKey="name"
@@ -114,7 +112,7 @@ export function InsightCards() {
               />
               <XAxis dataKey="actual" type="number" hide />
               <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="line" />} />
-              <Bar stackId="a" dataKey="actual" layout="vertical" fill="var(--color-actual)">
+              <Bar stackId="a" dataKey="actual" fill="var(--color-actual)">
                 <LabelList
                   dataKey="name"
                   position="insideLeft"
@@ -128,13 +126,7 @@ export function InsightCards() {
                   className="fill-primary-foreground text-xs tabular-nums"
                 />
               </Bar>
-              <Bar
-                stackId="a"
-                dataKey="remaining"
-                layout="vertical"
-                fill="var(--color-remaining)"
-                radius={[0, 6, 6, 0]}
-              >
+              <Bar stackId="a" dataKey="remaining" fill="var(--color-remaining)" radius={[0, 6, 6, 0]}>
                 <LabelList
                   dataKey="remaining"
                   position="insideRight"

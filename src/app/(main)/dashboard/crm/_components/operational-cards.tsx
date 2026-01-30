@@ -21,10 +21,10 @@ export function OperationalCards() {
         </CardHeader>
         <CardContent className="size-full">
           <ChartContainer config={salesPipelineChartConfig} className="size-full">
-            <FunnelChart margin={{ left: 0, right: 0, top: 0, bottom: 0 }}>
-              <Funnel className="stroke-2 stroke-card" dataKey="value" data={salesPipelineChartData}>
-                <LabelList className="fill-foreground stroke-0" dataKey="stage" position="right" offset={10} />
+            <FunnelChart data={salesPipelineChartData} margin={{ left: 24, right: 24, top: 0, bottom: 0 }}>
+              <Funnel className="stroke-2 stroke-card" dataKey="value" nameKey="stage">
                 <LabelList className="fill-foreground stroke-0" dataKey="value" position="left" offset={10} />
+                <LabelList className="fill-foreground stroke-0" dataKey="stage" position="right" offset={10} />
               </Funnel>
             </FunnelChart>
           </ChartContainer>

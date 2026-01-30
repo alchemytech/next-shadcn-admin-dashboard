@@ -1,0 +1,495 @@
+---
+description: "MANDATORY: Build validation workflow and CI/CD requirements"
+alwaysApply: true
+---
+
+# Build & Validation Rules
+
+## 🚨 CRITICAL: Always Build After Changes
+
+**Every code change MUST be validated with a successful build before committing.**
+
+## Mandatory Build Command
+
+```bash
+npm run build
+```
+
+This command:
+1. Compiles TypeScript (validates types)
+2. Builds Next.js application
+3. Checks for build errors
+4. Validates all imports and dependencies
+
+### What Build Catches
+
+- ✅ TypeScript type errors
+- ✅ Missing dependencies
+- ✅ Import errors
+- ✅ Invalid configurations
+- ✅ Module resolution issues
+- ✅ Circular dependencies
+- ✅ Build-time optimizations
+
+## Pre-Commit Validation Workflow
+
+### Required Steps (In Order)
+
+```bash
+# 1. Format and lint check
+npm run check
+
+# 2. Build validation (CRITICAL)
+npm run build
+
+# 3. Run tests (if applicable)
+npm run test:e2e:ci
+
+# 4. If all pass, commit
+git add .
+git commit -m "Your commit message"
+```
+
+### Automated Pre-Commit Hook
+
+Already configured via Husky in @.husky/pre-commit:
+
+```bash
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+# Run lint-staged
+npx lint-staged
+
+# Note: Add build check here if needed
+# npm run build
+```
+
+## Build Validation Checklist
+
+Before committing any changes:
+
+- [ ] Code compiles without TypeScript errors
+- [ ] All imports resolve correctly
+- [ ] No missing dependencies
+- [ ] Build completes successfully
+- [ ] No build warnings (or documented if acceptable)
+- [ ] Bundle size is reasonable
+- [ ] No circular dependencies introduced
+
+## Understanding Build Output
+
+### Successful Build
+
+```bash
+✓ Compiled successfully
+✓ Linting and checking validity of types
+✓ Collecting page data
+✓ Generating static pages (X/Y)
+✓ Finalizing page optimization
+
+Route (app)                              Size
+┌ ○ /                                    X kB
+├ ○ /dashboard                           Y kB
+└ ○ /dashboard/crm                       Z kB
+
+○ (Static) prerendered as static content
+```
+
+### Build Errors
+
+```bash
+❌ Failed to compile
+
+./src/components/example.tsx:10:15
+Type error: Property 'foo' does not exist on type 'Props'.
+```
+
+**Action:** Fix the error, then build again.
+
+### Build Warnings
+
+```bash
+⚠ Compiled with warnings
+
+./src/components/example.tsx
+Warning: React Hook useEffect has a missing dependency
+```
+
+**Action:** Address warnings or document why they're acceptable.
+
+## Common Build Issues & Solutions
+
+### Issue 1: TypeScript Errors
+
+```bash
+Error: Type 'string' is not assignable to type 'number'
+```
+
+**Solution:**
+- Fix type annotations
+- Update type definitions
+- Never use `any` to bypass
+
+### Issue 2: Missing Dependencies
+
+```bash
+Error: Module not found: Can't resolve 'some-package'
+```
+
+**Solution:**
+```bash
+# Verify package.json
+cat package.json | grep some-package
+
+# Reinstall if needed
+npm install
+```
+
+### Issue 3: Import Errors
+
+```bash
+Error: Module not found: Can't resolve '@/components/missing'
+```
+
+**Solution:**
+- Check file exists at path
+- Verify import path is correct
+- Check tsconfig paths configuration
+
+### Issue 4: Circular Dependencies
+
+```bash
+Warning: Circular dependency detected
+```
+
+**Solution:**
+- Refactor to break circular dependency
+- Extract shared code to separate module
+- Use dynamic imports if necessary
+
+## Biome Checks
+
+### Check Command
+
+```bash
+npm run check
+```
+
+Runs:
+- **Linting**: Catches code quality issues
+- **Formatting**: Ensures consistent style
+- **Type checking**: Validates TypeScript
+
+### Fix Command
+
+```bash
+npm run check:fix
+```
+
+Automatically fixes:
+- Formatting issues
+- Auto-fixable lint issues
+- Import organization
+
+### What Biome Catches
+
+```typescript
+// ❌ Unused imports
+import { Button } from "@/components/ui/button"; // Unused
+
+// ❌ Unnecessary type annotations
+const count: number = 42; // noInferrableTypes
+
+// ❌ Unsafe optional chaining
+user?.name.toUpperCase(); // Unsafe
+
+// ❌ Complexity issues
+// Functions that are too complex or nested
+
+// ❌ Suspicious code
+if (x = 5) { } // Assignment in condition
+```
+
+## Development Workflow
+
+### During Development
+
+```bash
+# Terminal 1: Dev server with fast refresh
+npm run dev
+
+# Terminal 2: Type checking (optional)
+npx tsc --noEmit --watch
+```
+
+### Before Committing
+
+```bash
+# 1. Stop dev server
+# 2. Run checks
+npm run check
+
+# 3. Build
+npm run build
+
+# 4. If successful, commit
+git add .
+git commit -m "feat: add new feature"
+```
+
+## CI/CD Pipeline
+
+### GitHub Actions Example
+
+```yaml
+name: Build & Test
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run Biome checks
+        run: npm run check
+      
+      - name: Build application
+        run: npm run build
+      
+      - name: Run E2E tests
+        run: npm run test:e2e:ci
+```
+
+### Build Failures in CI
+
+If CI build fails:
+
+1. **Pull latest changes**
+   ```bash
+   git pull origin main
+   ```
+
+2. **Clean install**
+   ```bash
+   rm -rf node_modules package-lock.json
+   npm install
+   ```
+
+3. **Run checks locally**
+   ```bash
+   npm run check
+   npm run build
+   ```
+
+4. **Fix issues**
+   - Address all errors
+   - Re-run build
+   - Ensure success before pushing
+
+## Production Build Optimization
+
+### Analyze Bundle Size
+
+After build, check output:
+
+```bash
+Route (app)                              Size      First Load JS
+┌ ○ /                                    142 B     87.3 kB
+├ ○ /dashboard                           3.45 kB   150 kB
+└ ○ /dashboard/crm                       8.29 kB   155 kB
+```
+
+### Bundle Size Limits
+
+- **First Load JS**: < 200 KB (target)
+- **Per route**: < 50 KB additional (target)
+- **Total bundle**: Monitor and optimize if growing
+
+### Large Bundle Investigation
+
+```bash
+# Build shows large bundle
+Route: /dashboard/analytics     250 kB
+
+# Actions:
+# 1. Check for heavy dependencies
+# 2. Use dynamic imports for large components
+# 3. Split code by route
+# 4. Lazy load charts, maps, etc.
+```
+
+## Environment-Specific Builds
+
+### Development Build
+
+```bash
+npm run dev
+# Fast refresh, detailed errors, larger bundle
+```
+
+### Production Build
+
+```bash
+npm run build
+npm start
+# Optimized, minified, smaller bundle
+```
+
+### Build for Different Environments
+
+```bash
+# Staging
+NEXT_PUBLIC_ENV=staging npm run build
+
+# Production
+NEXT_PUBLIC_ENV=production npm run build
+```
+
+## Build Performance
+
+### Improving Build Speed
+
+1. **Use TypeScript Project References** (if needed)
+2. **Parallel builds**: Next.js already optimizes
+3. **Disable source maps** in production (if acceptable)
+4. **Use SWC compiler**: Already configured in Next.js 16
+
+### Build Cache
+
+Next.js caches builds in `.next/cache/`:
+
+```bash
+# Clear cache if issues
+rm -rf .next
+
+# Rebuild
+npm run build
+```
+
+## Validation Before Deployment
+
+### Checklist
+
+- [ ] `npm run build` succeeds
+- [ ] No TypeScript errors
+- [ ] No linting errors
+- [ ] Bundle sizes acceptable
+- [ ] All tests pass
+- [ ] Environment variables configured
+- [ ] No console errors in production build
+- [ ] Manual smoke test completed
+
+### Production Smoke Test
+
+```bash
+# Build and run production locally
+npm run build
+npm start
+
+# Test critical paths:
+# 1. Homepage loads
+# 2. Authentication works
+# 3. Main features functional
+# 4. No console errors
+```
+
+## Error Recovery
+
+### Build Fails Unexpectedly
+
+```bash
+# 1. Clean node_modules
+rm -rf node_modules .next
+
+# 2. Clear npm cache
+npm cache clean --force
+
+# 3. Reinstall
+npm install
+
+# 4. Build again
+npm run build
+```
+
+### Persistent Build Failures
+
+1. **Check Node version**: Should be 18+
+   ```bash
+   node --version
+   ```
+
+2. **Check npm version**: Should be 9+
+   ```bash
+   npm --version
+   ```
+
+3. **Check for conflicting global packages**
+   ```bash
+   npm list -g --depth=0
+   ```
+
+4. **Try different Node version** (use nvm)
+   ```bash
+   nvm use 18
+   npm install
+   npm run build
+   ```
+
+## Best Practices
+
+1. **Build locally before pushing** - Catch errors early
+2. **Never commit broken builds** - Always validate first
+3. **Monitor build output** - Check warnings and sizes
+4. **Keep dependencies updated** - But test after updates
+5. **Document build issues** - Help team avoid same problems
+6. **Optimize bundle size** - Regular audits
+7. **Use build cache** - Faster subsequent builds
+8. **Test production builds** - Not just development
+9. **Automate validation** - CI/CD pipelines
+10. **Fix build warnings** - Don't let them accumulate
+
+## Build Scripts Reference
+
+```json
+{
+  "scripts": {
+    "dev": "next dev",           // Development server
+    "build": "next build",       // Production build
+    "start": "next start",       // Start production server
+    "lint": "biome lint",        // Lint only
+    "format": "biome format --write", // Format code
+    "check": "biome check",      // Lint + format check
+    "check:fix": "biome check --write" // Auto-fix issues
+  }
+}
+```
+
+## Summary
+
+**Golden Rule:**
+
+> **NEVER commit code that doesn't build successfully.**
+
+Every change, no matter how small, must pass:
+1. ✅ Biome checks (`npm run check`)
+2. ✅ Build (`npm run build`)
+3. ✅ Tests (`npm run test:e2e:ci`) - if applicable
+
+This ensures code quality, type safety, and prevents breaking changes from reaching production.
