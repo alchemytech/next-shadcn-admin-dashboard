@@ -133,6 +133,10 @@ These serve as the fallback; there is no separate default.css file. */
     @apply bg-background text-foreground;
     font-family: var(--font-sans), system-ui, sans-serif;
   }
+
+  a {
+    cursor: pointer;
+  }
 }
 
 @layer utilities {

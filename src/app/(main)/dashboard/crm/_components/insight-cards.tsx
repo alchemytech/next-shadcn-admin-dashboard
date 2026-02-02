@@ -42,6 +42,7 @@ export function InsightCards() {
                 outerRadius={90}
                 paddingAngle={2}
                 cornerRadius={4}
+                labelLine={false}
                 label={({ cx, cy, index }) => {
                   if (index !== 0) return null;
                   return (

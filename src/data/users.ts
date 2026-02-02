@@ -1,10 +1,12 @@
+import { APP_CONFIG } from "@/config/app-config";
+
 export const users = [
   {
     id: "1",
     name: "Alchemy Tech",
     username: "alchemytech",
     email: "hello@alchemytech.ca",
-    avatar: "https://avatars.githubusercontent.com/u/43849669",
+    avatar: APP_CONFIG.logoUrl,
     role: "administrator",
   },
   {

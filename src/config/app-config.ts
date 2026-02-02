@@ -2,8 +2,10 @@ import packageJson from "../../package.json";
 
 const currentYear = new Date().getFullYear();
 
+/** Logo path: static file in public/images/logo.jpg */
 export const APP_CONFIG = {
   name: "Alchemy Tech",
+  logoUrl: "/images/logo.jpg",
   version: packageJson.version,
   copyright: `© ${currentYear}, Alchemy Tech.`,
   meta: {
